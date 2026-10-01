@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "_macros.html" import major_card %}
+{% block title %}Jelajah Jurusan{% endblock %}
+{% block content %}
+<h3 class="mb-3">Jelajah Jurusan</h3>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-12 col-md-6">
+    <input name="q" value="{{ q }}" class="form-control" placeholder="Cari jurusan, mata kuliah, atau karier...">
+  </div>
+  <div class="col-8 col-md-4">
+    <select name="rumpun" class="form-select" onchange="this.form.submit()">
+      <option value="">Semua rumpun</option>
+      {% for r in rumpun_list %}<option value="{{ r }}" {{ 'selected' if r == rumpun }}>{{ r }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-4 col-md-2 d-grid"><button class="btn btn-primary">Cari</button></div>
+</form>
+
+<p class="text-muted small">{{ majors|length }} jurusan ditemukan</p>
+<div class="row g-3">
+  {% for m in majors %}
+  <div class="col-md-6 col-xl-4">{{ major_card(m, m.id in saved) }}</div>
+  {% else %}
+  <p class="text-center text-muted my-5">Tidak ada jurusan yang cocok. Coba kata kunci lain.</p>
+  {% endfor %}
+</div>
+{% endblock %}

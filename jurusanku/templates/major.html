@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% from "_macros.html" import bm_btn, rumpun_badge, ul %}
+{% block title %}{{ m.name }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    {{ rumpun_badge(m.rumpun) }}
+    <h2 class="fw-bold mb-0">{{ m.name }}</h2>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('compare', a=m.id) }}">⚖️ Bandingkan</a>
+    {{ bm_btn(m.id, saved) }}
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="card shadow-sm mb-3"><div class="card-body">
+      <p>{{ m.description }}</p>
+      <div class="row g-3">
+        <div class="col-md-6"><h6>📚 Mata kuliah utama</h6>{{ ul(m.courses) }}</div>
+        <div class="col-md-6"><h6>💼 Prospek karier</h6>{{ ul(m.careers) }}</div>
+      </div>
+    </div></div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-md-6"><div class="card shadow-sm h-100 border-success"><div class="card-body">
+        <h6 class="text-success">👍 Nilai plus</h6>{{ ul(m.pros) }}
+      </div></div></div>
+      <div class="col-md-6"><div class="card shadow-sm h-100 border-danger"><div class="card-body">
+        <h6 class="text-danger">👎 Nilai minus</h6>{{ ul(m.cons) }}
+      </div></div></div>
+    </div>
+
+    <div class="card shadow-sm"><div class="card-body">
+      <h6>📈 Simulasi prospek gaji (juta Rp/bulan)</h6>
+      <p class="small text-muted">Gaji awal Rp{{ '%g'|format(m.salary_min) }}–{{ '%g'|format(m.salary_max) }} jt. Kenaikan di grafik hanyalah asumsi ilustrasi, bukan jaminan.</p>
+      <div class="chart-box"><canvas id="sim"></canvas></div>
+    </div></div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card shadow-sm"><div class="card-body">
+      <h6>🏫 Kampus Target</h6>
+      <form id="targetForm" class="vstack gap-2 mb-3">
+        <input type="hidden" name="major_id" value="{{ m.id }}">
+        <input name="campus" list="kampus" class="form-control form-control-sm" placeholder="Nama kampus" required maxlength="100">
+        <datalist id="kampus">
+          {% for k in ['Universitas Indonesia','Institut Teknologi Bandung','Universitas Gadjah Mada','IPB University','Universitas Airlangga','Institut Teknologi Sepuluh Nopember','Universitas Diponegoro','Universitas Brawijaya','Universitas Padjadjaran','Telkom University','Universitas Bina Nusantara'] %}<option value="{{ k }}">{% endfor %}
+        </datalist>
+        <div class="row g-2">
+          <div class="col-4"><select name="campus_type" class="form-select form-select-sm"><option>PTN</option><option>PTS</option></select></div>
+          <div class="col-8"><select name="path" class="form-select form-select-sm">{% for j in jalur %}<option>{{ j }}</option>{% endfor %}</select></div>
+        </div>
+        <input name="note" class="form-control form-control-sm" placeholder="Catatan (opsional)" maxlength="200">
+        <button class="btn btn-sm btn-primary">+ Tambah target</button>
+      </form>
+      <ul class="list-group list-group-flush">
+        {% for t in targets %}
+        <li class="list-group-item px-0 d-flex justify-content-between gap-2">
+          <div>
+            <b>{{ t.campus }}</b> <span class="badge text-bg-secondary">{{ t.campus_type }}</span>
+            <div class="small text-muted">{{ t.path }}{% if t.note %} · {{ t.note }}{% endif %}</div>
+          </div>
+          <button class="btn btn-sm btn-outline-danger align-self-start" data-del-target="{{ t.id }}" aria-label="Hapus">🗑️</button>
+        </li>
+        {% else %}
+        <li class="list-group-item px-0 text-muted small">Belum ada kampus target untuk jurusan ini.</li>
+        {% endfor %}
+      </ul>
+    </div></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const sim = {{ sim|tojson }};
+new Chart(document.getElementById("sim"), {
+  type: "line",
+  data: { labels: sim.labels, datasets: [
+    { label: "Batas bawah", data: sim.min, borderColor: "#6c757d", tension: .3 },
+    { label: "Batas atas", data: sim.max, borderColor: "#4f46e5", backgroundColor: "rgba(79,70,229,.15)", fill: "-1", tension: .3 },
+  ] },
+  options: { maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } },
+});
+</script>
+{% endblock %}

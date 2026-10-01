@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% from "_macros.html" import bm_btn, rumpun_badge %}
+{% block title %}Hasil Tes{% endblock %}
+{% block content %}
+<div class="text-center mb-4">
+  <p class="text-muted mb-1">Hasil tes untuk <b>{{ nickname }}</b></p>
+  <h2 class="fw-bold">Kode Holland kamu: <span class="text-brand">{{ code }}</span></h2>
+  <p class="text-muted">
+    {% for k in code %}{{ dim_names[k] }}{{ ' · ' if not loop.last }}{% endfor %}
+  </p>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-6"><div class="card shadow-sm h-100"><div class="card-body">
+    <h6>Peta Potensi</h6>
+    <div class="chart-box"><canvas id="radar"></canvas></div>
+  </div></div></div>
+  <div class="col-md-6"><div class="card shadow-sm h-100"><div class="card-body">
+    <h6>Skor Minat (RIASEC)</h6>
+    <div class="chart-box"><canvas id="bars"></canvas></div>
+  </div></div></div>
+</div>
+
+<h4 class="mb-3">Top {{ top|length }} Jurusan untukmu</h4>
+<div class="vstack gap-3 mb-4">
+  {% for m, pct in top %}
+  <div class="card shadow-sm"><div class="card-body">
+    <div class="d-flex justify-content-between align-items-start gap-2">
+      <div>
+        <span class="fs-5 fw-bold text-muted me-1">#{{ loop.index }}</span>
+        <a class="fs-5 fw-semibold text-decoration-none" href="{{ url_for('major', slug=m.slug) }}">{{ m.name }}</a>
+        {{ rumpun_badge(m.rumpun) }}
+      </div>
+      <span class="fs-4 fw-bold text-success">{{ pct }}%</span>
+    </div>
+    <div class="progress my-2" style="height:10px"><div class="progress-bar bg-success" style="width:{{ pct }}%"></div></div>
+    <p class="small text-muted mb-2">{{ m.description }}</p>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-sm btn-primary" href="{{ url_for('major', slug=m.slug) }}">Detail</a>
+      {{ bm_btn(m.id, m.id in saved) }}
+    </div>
+  </div></div>
+  {% endfor %}
+</div>
+
+<div class="d-flex flex-wrap gap-2 justify-content-center">
+  {% if top|length >= 2 %}
+  <a class="btn btn-outline-primary" href="{{ url_for('compare', a=top[0][0].id, b=top[1][0].id) }}">⚖️ Bandingkan #1 dan #2</a>
+  {% endif %}
+  <a class="btn btn-outline-secondary" href="{{ url_for('quiz') }}">Ulangi tes</a>
+  <a class="btn btn-outline-secondary" href="{{ url_for('saved') }}">Jurusan impianku</a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const pot = {{ potentials|tojson }};
+const sc = {{ scores|tojson }};
+const short = {{ dim_short|tojson }};
+new Chart(document.getElementById("radar"), {
+  type: "radar",
+  data: { labels: Object.keys(pot), datasets: [{ label: "Potensi", data: Object.values(pot),
+    backgroundColor: "rgba(79,70,229,.25)", borderColor: "#4f46e5", pointBackgroundColor: "#4f46e5" }] },
+  options: { maintainAspectRatio: false, plugins: { legend: { display: false } },
+    scales: { r: { min: 0, max: 100, ticks: { stepSize: 25, backdropColor: "transparent" } } } },
+});
+new Chart(document.getElementById("bars"), {
+  type: "bar",
+  data: { labels: Object.keys(sc).map((k) => `${k} · ${short[k]}`), datasets: [{ data: Object.values(sc),
+    backgroundColor: ["#0d6efd", "#6f42c1", "#d63384", "#198754", "#fd7e14", "#6c757d"] }] },
+  options: { indexAxis: "y", maintainAspectRatio: false, plugins: { legend: { display: false } },
+    scales: { x: { min: 0, max: 100 } } },
+});
+</script>
+{% endblock %}

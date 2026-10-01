@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% from "_macros.html" import ul, rumpun_badge %}
+{% block title %}Bandingkan Jurusan{% endblock %}
+{% block content %}
+<h3 class="mb-3">Bandingkan Jurusan</h3>
+<form method="get" class="row g-2 mb-4">
+  {% for name, sel in [('a', a), ('b', b)] %}
+  <div class="col-12 col-md-6">
+    <select name="{{ name }}" class="form-select" onchange="this.form.submit()">
+      <option value="">Pilih jurusan {{ loop.index }}...</option>
+      {% for m in allm %}<option value="{{ m.id }}" {{ 'selected' if sel and sel.id == m.id }}>{{ m.name }}</option>{% endfor %}
+    </select>
+  </div>
+  {% endfor %}
+</form>
+
+{% if a and b %}
+<div class="table-responsive mb-4">
+  <table class="table table-bordered align-top compare-table">
+    <thead class="table-light">
+      <tr><th></th>{% for m in (a, b) %}<th><a class="text-decoration-none" href="{{ url_for('major', slug=m.slug) }}">{{ m.name }}</a></th>{% endfor %}</tr>
+    </thead>
+    <tbody>
+      <tr><th>Rumpun</th>{% for m in (a, b) %}<td>{{ rumpun_badge(m.rumpun) }}</td>{% endfor %}</tr>
+      {% if me %}
+      <tr><th>Kecocokan denganmu</th>{% for m in (a, b) %}<td class="fw-bold text-success">{{ m.match }}%</td>{% endfor %}</tr>
+      {% endif %}
+      <tr><th>Deskripsi</th>{% for m in (a, b) %}<td>{{ m.description }}</td>{% endfor %}</tr>
+      <tr><th>Mata kuliah utama</th>{% for m in (a, b) %}<td>{{ ul(m.courses) }}</td>{% endfor %}</tr>
+      <tr><th>Prospek karier</th>{% for m in (a, b) %}<td>{{ ul(m.careers) }}</td>{% endfor %}</tr>
+      <tr><th>Estimasi gaji awal</th>{% for m in (a, b) %}<td>Rp{{ '%g'|format(m.salary_min) }}–{{ '%g'|format(m.salary_max) }} jt/bulan</td>{% endfor %}</tr>
+      <tr><th>Nilai plus</th>{% for m in (a, b) %}<td>{{ ul(m.pros) }}</td>{% endfor %}</tr>
+      <tr><th>Nilai minus</th>{% for m in (a, b) %}<td>{{ ul(m.cons) }}</td>{% endfor %}</tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card shadow-sm"><div class="card-body">
+  <h6>Profil minat jurusan{% if me %} vs profilmu{% endif %}</h6>
+  <div class="chart-box"><canvas id="radar"></canvas></div>
+</div></div>
+{% else %}
+<p class="text-center text-muted my-5">Pilih dua jurusan di atas untuk melihat perbandingannya secara berdampingan.</p>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if a and b %}
+<script>
+const dims = {{ dims|tojson }};
+const get = (m) => dims.split("").map((k) => m[k.toLowerCase()]);
+const sets = [
+  { label: {{ a.name|tojson }}, data: get({{ a|tojson }}), borderColor: "#4f46e5", backgroundColor: "rgba(79,70,229,.2)" },
+  { label: {{ b.name|tojson }}, data: get({{ b|tojson }}), borderColor: "#fd7e14", backgroundColor: "rgba(253,126,20,.2)" },
+];
+{% if me %}
+sets.push({ label: "Profilmu", data: {{ me|tojson }}.map((v) => v / 20), borderColor: "#198754", borderDash: [5, 5], backgroundColor: "transparent" });
+{% endif %}
+new Chart(document.getElementById("radar"), {
+  type: "radar",
+  data: { labels: {{ labels|tojson }}, datasets: sets },
+  options: { maintainAspectRatio: false, plugins: { legend: { position: "bottom" } },
+    scales: { r: { min: 0, max: 5, ticks: { stepSize: 1, backdropColor: "transparent" } } } },
+});
+</script>
+{% endif %}
+{% endblock %}

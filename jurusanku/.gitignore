@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+venv/
+.venv/
+jurusanku.db
+.env

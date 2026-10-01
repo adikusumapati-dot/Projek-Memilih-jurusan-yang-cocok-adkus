@@ -1,0 +1,27 @@
+{% macro bm_btn(mid, saved, reload=false) %}
+<button type="button" class="btn btn-sm {{ 'btn-warning' if saved else 'btn-outline-warning' }}"
+        data-bookmark="{{ mid }}" {% if reload %}data-reload{% endif %}>{{ '★ Tersimpan' if saved else '☆ Simpan' }}</button>
+{% endmacro %}
+
+{% macro rumpun_badge(r) %}
+<span class="badge text-bg-{{ {'Saintek': 'primary', 'Soshum': 'success', 'Campuran': 'warning'}[r] }}">{{ r }}</span>
+{% endmacro %}
+
+{% macro ul(s) %}<ul class="mb-0 ps-3">{% for x in s.split('|') %}<li>{{ x }}</li>{% endfor %}</ul>{% endmacro %}
+
+{% macro major_card(m, saved, reload=false) %}
+<div class="card shadow-sm h-100 major-card">
+  <div class="card-body d-flex flex-column">
+    <div class="mb-1">{{ rumpun_badge(m.rumpun) }}</div>
+    <h5 class="card-title"><a class="text-decoration-none" href="{{ url_for('major', slug=m.slug) }}">{{ m.name }}</a></h5>
+    <p class="card-text small text-muted">{{ m.description|truncate(110) }}</p>
+    <p class="small mb-2"><b>Karier:</b> {{ m.careers.split('|')[:3]|join(', ') }}</p>
+    <p class="small mb-3"><b>Estimasi gaji awal:</b> Rp{{ '%g'|format(m.salary_min) }}–{{ '%g'|format(m.salary_max) }} jt/bulan</p>
+    <div class="mt-auto d-flex flex-wrap gap-2">
+      <a class="btn btn-sm btn-primary" href="{{ url_for('major', slug=m.slug) }}">Detail</a>
+      <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('compare', a=m.id) }}">Bandingkan</a>
+      {{ bm_btn(m.id, saved, reload) }}
+    </div>
+  </div>
+</div>
+{% endmacro %}

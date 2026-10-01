@@ -1,0 +1,73 @@
+:root {
+  --brand: #4f46e5;
+}
+
+body {
+  background: #f5f6fb;
+}
+
+.bg-brand {
+  background-color: var(--brand) !important;
+}
+
+.text-brand {
+  color: var(--brand);
+}
+
+.btn-primary {
+  --bs-btn-bg: var(--brand);
+  --bs-btn-border-color: var(--brand);
+  --bs-btn-hover-bg: #4338ca;
+  --bs-btn-hover-border-color: #4338ca;
+  --bs-btn-active-bg: #3730a3;
+}
+
+.btn-outline-primary {
+  --bs-btn-color: var(--brand);
+  --bs-btn-border-color: var(--brand);
+  --bs-btn-hover-bg: var(--brand);
+  --bs-btn-hover-border-color: var(--brand);
+  --bs-btn-active-bg: var(--brand);
+}
+
+.card {
+  border: 0;
+  border-radius: 14px;
+}
+
+.hero {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+}
+
+.chart-box {
+  position: relative;
+  height: 280px;
+}
+
+.likert-btn {
+  padding: 0.75rem 1rem;
+}
+
+.likert-btn.active {
+  background: var(--brand);
+  color: #fff;
+}
+
+.major-card {
+  transition: transform 0.15s ease;
+}
+
+.major-card:hover {
+  transform: translateY(-2px);
+}
+
+.compare-table th:first-child {
+  width: 150px;
+  background: #f8f9fa;
+}
+
+@media (max-width: 576px) {
+  .compare-table {
+    font-size: 0.85rem;
+  }
+}

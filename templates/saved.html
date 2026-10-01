@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% from "_macros.html" import major_card %}
+{% block title %}Jurusan Impian{% endblock %}
+{% block content %}
+<h3 class="mb-3">⭐ Jurusan Impian</h3>
+<div class="row g-3 mb-5">
+  {% for m in majors %}
+  <div class="col-md-6 col-xl-4">{{ major_card(m, true, true) }}</div>
+  {% else %}
+  <div class="text-center text-muted my-4">
+    <p>Belum ada jurusan yang disimpan.</p>
+    <a class="btn btn-primary" href="{{ url_for('explore') }}">Jelajah jurusan</a>
+  </div>
+  {% endfor %}
+</div>
+
+<h3 class="mb-3">🏫 Kampus Target</h3>
+{% if targets %}
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead class="table-light"><tr><th>Kampus</th><th>Jurusan</th><th>Jalur masuk</th><th>Catatan</th><th></th></tr></thead>
+    <tbody>
+      {% for t in targets %}
+      <tr>
+        <td><b>{{ t.campus }}</b> <span class="badge text-bg-secondary">{{ t.campus_type }}</span></td>
+        <td><a class="text-decoration-none" href="{{ url_for('major', slug=t.slug) }}">{{ t.major_name }}</a></td>
+        <td>{{ t.path }}</td>
+        <td class="small text-muted">{{ t.note }}</td>
+        <td><button class="btn btn-sm btn-outline-danger" data-del-target="{{ t.id }}" aria-label="Hapus">🗑️</button></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="text-muted">Belum ada kampus target. Buka halaman detail sebuah jurusan untuk menambahkannya.</p>
+{% endif %}
+<p class="small text-muted mt-3">Data tersimpan di browser ini lewat sesi anonim, jadi gunakan perangkat dan browser yang sama untuk melihatnya lagi.</p>
+{% endblock %}

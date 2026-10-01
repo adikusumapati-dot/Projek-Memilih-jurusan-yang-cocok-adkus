@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Tes Minat & Bakat{% endblock %}
+{% block content %}
+<div class="mx-auto" style="max-width:640px">
+  <!-- Layar pembuka -->
+  <div id="intro" class="card shadow-sm"><div class="card-body p-4">
+    <h4 class="mb-2">Tes Minat & Bakat</h4>
+    <p class="text-muted">Ada {{ questions|length }} pernyataan. Jawab sesuai dirimu yang sebenarnya, bukan yang kamu kira ideal. Tidak ada jawaban benar atau salah.</p>
+    <label class="form-label small" for="nick">Nama panggilan (opsional)</label>
+    <input id="nick" class="form-control mb-3" maxlength="30" placeholder="mis. Rina">
+    <button id="start" class="btn btn-primary w-100">Mulai</button>
+  </div></div>
+
+  <!-- Pertanyaan -->
+  <div id="quiz" class="card shadow-sm d-none"><div class="card-body p-4">
+    <div class="d-flex justify-content-between small text-muted mb-1">
+      <span id="cat" class="badge text-bg-secondary"></span><span id="count"></span>
+    </div>
+    <div class="progress mb-4" style="height:8px"><div id="bar" class="progress-bar bg-brand" style="width:0%"></div></div>
+    <h5 id="qtext" class="mb-4" style="min-height:4.5rem"></h5>
+    <div class="d-grid gap-2">
+      {% for v, label in [(5,'Sangat setuju'),(4,'Setuju'),(3,'Netral'),(2,'Tidak setuju'),(1,'Sangat tidak setuju')] %}
+      <button type="button" class="btn btn-outline-primary text-start likert-btn" data-v="{{ v }}">{{ label }}</button>
+      {% endfor %}
+    </div>
+    <button id="back" class="btn btn-link mt-3 px-0">← Sebelumnya</button>
+  </div></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const Q = {{ questions|tojson }};
+const $ = (id) => document.getElementById(id);
+const ans = {};
+let i = 0, busy = false;
+
+function show() {
+  const q = Q[i];
+  $("cat").textContent = q.category;
+  $("qtext").textContent = q.text;
+  $("count").textContent = `${i + 1} / ${Q.length}`;
+  $("bar").style.width = (i / Q.length * 100) + "%";
+  $("back").disabled = i === 0;
+  document.querySelectorAll(".likert-btn").forEach((b) => b.classList.toggle("active", ans[q.id] == b.dataset.v));
+}
+
+async function finish() {
+  busy = true;
+  $("bar").style.width = "100%";
+  try {
+    const res = await fetch("/api/quiz/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nickname: $("nick").value, answers: ans }),
+    });
+    const d = await res.json();
+    if (!res.ok) throw new Error(d.error || "Gagal menyimpan hasil");
+    location.href = "/result/" + d.id;
+  } catch (e) {
+    busy = false;
+    alert(e.message);
+  }
+}
+
+$("start").onclick = () => { $("intro").classList.add("d-none"); $("quiz").classList.remove("d-none"); show(); };
+$("back").onclick = () => { if (i > 0) { i--; show(); } };
+document.querySelectorAll(".likert-btn").forEach((b) => b.addEventListener("click", () => {
+  if (busy) return;
+  ans[Q[i].id] = Number(b.dataset.v);
+  if (i < Q.length - 1) { i++; show(); } else { finish(); }
+}));
+</script>
+{% endblock %}
